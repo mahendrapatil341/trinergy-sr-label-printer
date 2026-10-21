@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Trinergy SR & Direct Label Print Portal</title>
+
     <!-- Bootstrap 5 & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- JsBarcode & QRCode.js for Direct HTML/SVG Rendering (No PDF) -->
+
+    <!-- JsBarcode & QRCode.js -->
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
@@ -32,8 +34,7 @@
         }
 
         /* ==========================================================
-           EXACT PHYSICAL DIMENSIONS FOR NAMEPLATE (100mm x 50mm)
-           Matches nameplate_label.py compute_layout()
+           NAMEPLATE LABEL (100mm x 50mm)
            ========================================================== */
         .nameplate-label {
             width: 100mm;
@@ -93,6 +94,7 @@
             font-size: 6.8pt;
             line-height: 1;
         }
+
         .np-spec-row:last-child {
             border-bottom: none;
         }
@@ -193,7 +195,10 @@
         }
 
         /* ==========================================================
-           EXACT PHYSICAL DIMENSIONS FOR QR LABELS (36mm x 12mm) - Fixed Overlap
+           QR LABEL (36mm x 12mm) — MATCH PHYSICAL REFERENCE
+           Left: Trinergy / model / SR or Part No.
+           Upper-right: QR code
+           Bottom: identifier label + identifier value
            ========================================================== */
         .qr-label-card {
             width: 36mm;
@@ -201,7 +206,7 @@
             background: #ffffff;
             color: #000000;
             box-sizing: border-box;
-            padding: 0.5mm;
+            padding: 0;
             position: relative;
             font-family: Arial, Helvetica, sans-serif;
             box-shadow: 0 3px 10px rgba(0,0,0,0.12);
@@ -212,77 +217,150 @@
 
         .qr-top-title {
             position: absolute;
-            left: 1mm;
-            top: 0.8mm;
+            left: 1.8mm;
+            top: 1.1mm;
+            width: 17mm;
             font-size: 6.5pt;
             font-weight: 700;
             line-height: 1;
+            white-space: nowrap;
         }
 
         .qr-top-sub {
             position: absolute;
-            left: 1mm;
+            left: 1.8mm;
             top: 3.8mm;
+            width: 17mm;
             font-size: 6.5pt;
             font-weight: 700;
             line-height: 1;
+            white-space: nowrap;
         }
 
         .qr-widget-box {
             position: absolute;
-            left: 23mm;
-            top: 1mm;
-            width: 10mm;
-            height: 10mm;
+            right: 4.2mm;
+            top: 0.7mm;
+            width: 7mm;
+            height: 7mm;
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
         }
 
         .qr-widget-box img,
         .qr-widget-box canvas {
-            width: 10mm !important;
-            height: 10mm !important;
+            width: 7mm !important;
+            height: 7mm !important;
+            max-width: 7mm !important;
+            max-height: 7mm !important;
             display: block;
+            margin: 0;
+            padding: 0;
         }
 
-        .qr-footer-line {
+        .qr-id-label {
             position: absolute;
-            left: 1mm;
-            bottom: 1.2mm;
-            font-size: 5.6pt;
+            left: 1.8mm;
+            top: 7.7mm;
+            width: 9mm;
+            font-size: 6.1pt;
             font-weight: 700;
-            white-space: pre;
             line-height: 1;
+            white-space: nowrap;
+        }
+
+        .qr-id-value {
+            position: absolute;
+            left: 11.5mm;
+            right: 1mm;
+            top: 7.7mm;
+            font-size: 6.1pt;
+            font-weight: 700;
+            line-height: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: clip;
         }
 
         /* ==========================================================
-           DIRECT BROWSER PRINT ENGINE (NO PDF INTERMEDIATE)
+           DIRECT BROWSER PRINT
            ========================================================== */
+        #direct-print-mount {
+            display: none;
+        }
+
         @media print {
+            @page {
+                margin: 0;
+            }
+
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #fff !important;
+            }
+
             body * {
                 visibility: hidden;
             }
+
             .no-print {
                 display: none !important;
             }
+
             #direct-print-mount,
             #direct-print-mount * {
                 visibility: visible;
             }
+
             #direct-print-mount {
+                display: block !important;
                 position: absolute;
                 left: 0;
                 top: 0;
                 margin: 0;
                 padding: 0;
             }
+
             .nameplate-label,
             .qr-label-card {
                 box-shadow: none !important;
-                border: none !important;
+                margin: 0 !important;
                 page-break-after: always;
                 break-after: page;
+            }
+
+            .qr-label-card {
+                width: 36mm !important;
+                height: 12mm !important;
+                border: none !important;
+                padding: 0 !important;
+            }
+
+            .qr-widget-box {
+                right: 4.2mm !important;
+                top: 0.7mm !important;
+                width: 7mm !important;
+                height: 7mm !important;
+            }
+
+            .qr-widget-box img,
+            .qr-widget-box canvas {
+                width: 7mm !important;
+                height: 7mm !important;
+            }
+
+            .qr-id-label {
+                left: 1.8mm !important;
+                top: 7.7mm !important;
+            }
+
+            .qr-id-value {
+                left: 11.5mm !important;
+                right: 1mm !important;
+                top: 7.7mm !important;
             }
         }
     </style>
@@ -294,10 +372,12 @@
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
             <h3 class="fw-bold text-dark mb-0">
-                <i class="bi bi-qr-code-scan text-primary me-1"></i> Trinergy SR & Direct Label Print Portal
+                <i class="bi bi-qr-code-scan text-primary me-1"></i>
+                Trinergy SR &amp; Direct Label Print Portal
             </h3>
             <p class="text-muted small mb-0">
-                SR Format: <code>YYYYMM + MODEL_CODE + 4-Digit Counter</code> &bull; Direct Thermal Print (No PDF)
+                SR Format: <code>YYYYMM + MODEL_CODE + 4-Digit Counter</code>
+                &bull; Direct Thermal Print (No PDF)
             </p>
         </div>
         <div class="d-flex align-items-center gap-2">
@@ -308,9 +388,9 @@
         </div>
     </div>
 
-    <!-- 3 CORE FUNCTIONS ROW -->
+    <!-- Three main functions -->
     <div class="row g-3 mb-4">
-        <!-- FUNCTION 1: GENERATE NEW SR -->
+        <!-- Generate SR -->
         <div class="col-lg-4 col-md-6">
             <div class="card shadow-sm h-100 border-0 border-top border-4 border-primary">
                 <div class="card-header bg-white fw-bold py-2">
@@ -330,17 +410,17 @@
                         <input type="date" id="gen-test-date" class="form-control form-control-sm mb-2" required>
 
                         <label class="small text-muted fw-semibold mb-1">Preview Next SR (YYYYMM + MODEL + Counter)</label>
-                        <input type="text" id="gen-sr-preview" class="form-control form-control-sm mb-3 font-monospace fw-bold bg-white" readonly placeholder="Select model & date...">
+                        <input type="text" id="gen-sr-preview" class="form-control form-control-sm mb-3 font-monospace fw-bold bg-white" readonly placeholder="Select model &amp; date...">
 
                         <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold py-2">
-                            <i class="bi bi-lightning-charge-fill me-1"></i> Create SR & Load for Print
+                            <i class="bi bi-lightning-charge-fill me-1"></i> Create SR &amp; Load for Print
                         </button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- FUNCTION 2: DIRECT PRINT LABEL (NO PDF) -->
+        <!-- Direct print -->
         <div class="col-lg-4 col-md-6">
             <div class="card shadow-sm h-100 border-0 border-top border-4 border-warning">
                 <div class="card-header bg-white fw-bold py-2">
@@ -371,18 +451,19 @@
                         </div>
 
                         <div class="alert alert-warning py-1 px-2 small mb-2">
-                            <i class="bi bi-info-circle me-1"></i> Opens native OS printer selector directly with exact millimeter `@page` sizing.
+                            <i class="bi bi-info-circle me-1"></i>
+                            Opens native OS printer selector with exact millimeter page sizing.
                         </div>
 
                         <button type="submit" class="btn btn-warning btn-sm w-100 fw-bold py-2">
-                            <i class="bi bi-printer me-1"></i> Select Printer & Direct Print
+                            <i class="bi bi-printer me-1"></i> Select Printer &amp; Direct Print
                         </button>
                     </form>
                 </div>
             </div>
         </div>
 
-        <!-- FUNCTION 3: SYSTEM COUNTERS (ADMIN) -->
+        <!-- Counters -->
         <div class="col-lg-4 col-md-12">
             <div class="card shadow-sm h-100 border-0 border-top border-4 border-dark">
                 <div class="card-header bg-white fw-bold py-2">
@@ -414,13 +495,13 @@
         </div>
     </div>
 
-    <!-- LIVE LABEL PREVIEW & RECENT SRs -->
+    <!-- Preview and records -->
     <div class="row g-3">
         <div class="col-lg-6">
             <div class="card shadow-sm h-100">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
                     <span class="fw-bold"><i class="bi bi-eye text-primary me-1"></i> Live 1:1 Hardware Label Preview</span>
-                    <span class="badge bg-secondary" id="preview-dim-badge">100mm &times; 50mm</span>
+                    <span class="badge bg-secondary" id="preview-dim-badge">100mm × 50mm</span>
                 </div>
                 <div class="card-body">
                     <div class="preview-stage" id="live-preview-stage"></div>
@@ -457,12 +538,36 @@
 
 <script>
 const MODEL_SPECS = {
-    "T3X": { family: "3X", modelName: "Trinergy 3X CORE", qrLine2: "3X CORE", nameplateProdCode: "10B20012G27N", qrProdCode: "10B20012G27N", opCurrent: "2083 AMP" },
-    "T2X": { family: "2X", modelName: "Trinergy 2X CORE", qrLine2: "2X CORE", nameplateProdCode: "10B20012G25N", qrProdCode: "10B20010G25N", opCurrent: "1389 AMP" },
-    "TST": { family: "STS", modelName: "Trinergy STS", qrLine2: "STS", nameplateProdCode: "10B20012G32N", qrProdCode: "10B20008G20N", opCurrent: "3000 AMP" }
+    "T3X": {
+        family: "3X",
+        modelName: "Trinergy 3X CORE",
+        qrLine2: "3X CORE",
+        nameplateProdCode: "10B20012G27N",
+        qrProdCode: "10B20012G27N",
+        opCurrent: "2083 AMP"
+    },
+    "T2X": {
+        family: "2X",
+        modelName: "Trinergy 2X CORE",
+        qrLine2: "2X CORE",
+        nameplateProdCode: "10B20012G25N",
+        qrProdCode: "10B20010G25N",
+        opCurrent: "1389 AMP"
+    },
+    "TST": {
+        family: "STS",
+        modelName: "Trinergy STS",
+        qrLine2: "STS",
+        nameplateProdCode: "10B20012G32N",
+        qrProdCode: "10B20008G20N",
+        opCurrent: "3000 AMP"
+    }
 };
 
-const STORAGE_KEYS = { COUNTERS: "trinergy_sr_counters_v3", RECORDS: "trinergy_sr_records_v3" };
+const STORAGE_KEYS = {
+    COUNTERS: "trinergy_sr_counters_v3",
+    RECORDS: "trinergy_sr_records_v3"
+};
 
 let counters = { T3X: 43, T2X: 18, TST: 9 };
 let srRecords = [];
@@ -478,9 +583,12 @@ window.addEventListener("DOMContentLoaded", () => {
 function loadState() {
     const savedCounters = localStorage.getItem(STORAGE_KEYS.COUNTERS);
     const savedRecords = localStorage.getItem(STORAGE_KEYS.RECORDS);
+
     if (savedCounters) counters = JSON.parse(savedCounters);
-    if (savedRecords) srRecords = JSON.parse(savedRecords);
-    else {
+
+    if (savedRecords) {
+        srRecords = JSON.parse(savedRecords);
+    } else {
         srRecords = [
             { srNumber: "202610T3X0043", modelCode: "T3X", creationDate: "2026-10-21" },
             { srNumber: "202610T2X0018", modelCode: "T2X", creationDate: "2026-10-20" },
@@ -500,8 +608,10 @@ function resetDemoData() {
         localStorage.removeItem(STORAGE_KEYS.COUNTERS);
         localStorage.removeItem(STORAGE_KEYS.RECORDS);
         counters = { T3X: 43, T2X: 18, TST: 9 };
+        srRecords = [];
         loadState();
         refreshUI();
+        updateNextSRPreview();
     }
 }
 
@@ -515,30 +625,47 @@ function updateNextSRPreview() {
     const modelCode = document.getElementById("gen-model-code").value;
     const dateStr = document.getElementById("gen-test-date").value;
     const previewInput = document.getElementById("gen-sr-preview");
-    if (!modelCode || !dateStr) { previewInput.value = ""; return; }
+
+    if (!modelCode || !dateStr) {
+        previewInput.value = "";
+        return;
+    }
+
     previewInput.value = buildSRNumber(modelCode, dateStr, (counters[modelCode] || 0) + 1);
 }
 
-function handleCreateSR(e) {
-    e.preventDefault();
+function handleCreateSR(event) {
+    event.preventDefault();
+
     const modelCode = document.getElementById("gen-model-code").value;
     const dateStr = document.getElementById("gen-test-date").value;
     if (!modelCode || !dateStr) return;
+
     counters[modelCode] = (counters[modelCode] || 0) + 1;
     const newSR = buildSRNumber(modelCode, dateStr, counters[modelCode]);
-    srRecords.unshift({ srNumber: newSR, modelCode: modelCode, creationDate: dateStr });
+
+    srRecords.unshift({
+        srNumber: newSR,
+        modelCode: modelCode,
+        creationDate: dateStr
+    });
+
     saveState();
     refreshUI(newSR);
     updateNextSRPreview();
 }
 
-function handleUpdateCounter(e) {
-    e.preventDefault();
+function handleUpdateCounter(event) {
+    event.preventDefault();
+
     const modelCode = document.getElementById("counter-model-code").value;
     const newVal = parseInt(document.getElementById("counter-new-val").value, 10);
-    if (!modelCode || isNaN(newVal) || newVal < 0) return;
+
+    if (!modelCode || Number.isNaN(newVal) || newVal < 0) return;
+
     counters[modelCode] = newVal;
     saveState();
+
     document.getElementById("counter-new-val").value = "";
     refreshUI();
     updateNextSRPreview();
@@ -546,26 +673,43 @@ function handleUpdateCounter(e) {
 
 function refreshUI(selectSR = null) {
     document.getElementById("stat-total").textContent = `Total SRs: ${srRecords.length}`;
+
     document.getElementById("counter-badges").innerHTML = Object.entries(counters)
-        .map(([code, val]) => `<span class="badge bg-white text-dark border me-2 px-2 py-1">${code}: <strong>${val}</strong></span>`).join("");
+        .map(([code, value]) =>
+            `<span class="badge bg-white text-dark border me-2 px-2 py-1">${code}: <strong>${value}</strong></span>`
+        ).join("");
 
-    const activeSR = selectSR || document.getElementById("print-sr-custom").value || (srRecords[0] && srRecords[0].srNumber) || "";
-    document.getElementById("print-sr-select").innerHTML = `<option value="">Choose SR...</option>` +
-        srRecords.map(r => `<option value="${r.srNumber}" ${r.srNumber === activeSR ? "selected" : ""}>${r.srNumber} (${r.modelCode})</option>`).join("");
+    const activeSR = selectSR ||
+        document.getElementById("print-sr-custom").value ||
+        (srRecords[0] && srRecords[0].srNumber) ||
+        "";
 
-    if (activeSR) document.getElementById("print-sr-custom").value = activeSR;
+    document.getElementById("print-sr-select").innerHTML =
+        `<option value="">Choose SR...</option>` +
+        srRecords.map(record =>
+            `<option value="${record.srNumber}" ${record.srNumber === activeSR ? "selected" : ""}>${record.srNumber} (${record.modelCode})</option>`
+        ).join("");
 
-    document.getElementById("sr-records-tbody").innerHTML = srRecords.map(r => {
-        const spec = MODEL_SPECS[r.modelCode] || MODEL_SPECS.T3X;
+    if (activeSR) {
+        document.getElementById("print-sr-custom").value = activeSR;
+    }
+
+    document.getElementById("sr-records-tbody").innerHTML = srRecords.map(record => {
+        const spec = MODEL_SPECS[record.modelCode] || MODEL_SPECS.T3X;
+
         return `
-            <tr style="cursor:pointer;" onclick="selectRecordForPrint('${r.srNumber}')">
-                <td class="fw-bold font-monospace text-primary">${r.srNumber}</td>
+            <tr style="cursor:pointer;" onclick="selectRecordForPrint('${record.srNumber}')">
+                <td class="fw-bold font-monospace text-primary">${record.srNumber}</td>
                 <td><span class="badge bg-secondary">${spec.qrLine2}</span></td>
                 <td class="font-monospace">${spec.nameplateProdCode}</td>
-                <td>${r.creationDate}</td>
+                <td>${record.creationDate}</td>
                 <td class="text-end" onclick="event.stopPropagation();">
-                    <button class="btn btn-sm btn-outline-dark py-0 px-2 me-1" onclick="quickPrint('${r.srNumber}', 'nameplate')"><i class="bi bi-upc-scan"></i> Nameplate</button>
-                    <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="quickPrint('${r.srNumber}', 'qr')"><i class="bi bi-qr-code"></i> QR</button>
+                    <button class="btn btn-sm btn-outline-dark py-0 px-2 me-1" onclick="quickPrint('${record.srNumber}', 'nameplate')">
+                        <i class="bi bi-upc-scan"></i> Nameplate
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="quickPrint('${record.srNumber}', 'qr')">
+                        <i class="bi bi-qr-code"></i> QR
+                    </button>
                 </td>
             </tr>
         `;
@@ -574,70 +718,138 @@ function refreshUI(selectSR = null) {
     renderLivePreview();
 }
 
-function syncSelectedSR(val) { if (val) { document.getElementById("print-sr-custom").value = val; renderLivePreview(); } }
-function selectRecordForPrint(srNumber) { document.getElementById("print-sr-select").value = srNumber; document.getElementById("print-sr-custom").value = srNumber; renderLivePreview(); }
+function syncSelectedSR(value) {
+    if (value) {
+        document.getElementById("print-sr-custom").value = value;
+        renderLivePreview();
+    }
+}
+
+function selectRecordForPrint(srNumber) {
+    document.getElementById("print-sr-select").value = srNumber;
+    document.getElementById("print-sr-custom").value = srNumber;
+    renderLivePreview();
+}
+
 function quickPrint(srNumber, labelType) {
     document.getElementById("print-sr-select").value = srNumber;
     document.getElementById("print-sr-custom").value = srNumber;
     document.getElementById("print-label-type").value = labelType;
     renderLivePreview();
-    setTimeout(() => triggerBrowserPrint(), 120);
+    setTimeout(triggerBrowserPrint, 120);
 }
 
 function resolveSpecFromSR(srNo) {
     const clean = (srNo || "").trim().toUpperCase();
-    const sliceCode = clean.length >= 9 ? clean.substring(6, 9) : "";
-    return MODEL_SPECS[sliceCode] ? { code: sliceCode, ...MODEL_SPECS[sliceCode], validSlice: true } : { code: "T3X", ...MODEL_SPECS["T3X"], validSlice: false };
+    const modelCode = clean.length >= 9 ? clean.substring(6, 9) : "";
+
+    if (MODEL_SPECS[modelCode]) {
+        return { code: modelCode, ...MODEL_SPECS[modelCode], validSlice: true };
+    }
+
+    return { code: "T3X", ...MODEL_SPECS.T3X, validSlice: false };
 }
 
 function createNameplateDOM(srNo, partOverride) {
     const spec = resolveSpecFromSR(srNo);
     const prodCode = partOverride || spec.nameplateProdCode;
+
     const wrapper = document.createElement("div");
     wrapper.className = "nameplate-label";
+
     wrapper.innerHTML = `
         <div class="np-outer-box">
             <div class="np-row-0">Trinergy U.P.S.</div>
             <div class="np-middle-grid">
                 <div class="np-left-rows">
-                    <div class="np-spec-row np-r1"><div class="np-col1">TYPE/RATING</div><div class="np-col2">${spec.family} CORE, 415VAC, 3PH, 50Hz</div></div>
-                    <div class="np-spec-row np-r2"><div class="np-col1">MAINS I/P</div><div class="np-col2">415VAC, 3PH, 50Hz</div></div>
-                    <div class="np-spec-row np-r3"><div class="np-col1">BYPASS I/P</div><div class="np-col2">415VAC, 3PH, 50Hz</div></div>
-                    <div class="np-spec-row np-r4"><div class="np-col1">O/P CURRENT</div><div class="np-col2">${spec.opCurrent}</div></div>
+                    <div class="np-spec-row np-r1">
+                        <div class="np-col1">TYPE/RATING</div>
+                        <div class="np-col2">${spec.family} CORE, 415VAC, 3PH, 50Hz</div>
+                    </div>
+                    <div class="np-spec-row np-r2">
+                        <div class="np-col1">MAINS I/P</div>
+                        <div class="np-col2">415VAC, 3PH, 50Hz</div>
+                    </div>
+                    <div class="np-spec-row np-r3">
+                        <div class="np-col1">BYPASS I/P</div>
+                        <div class="np-col2">415VAC, 3PH, 50Hz</div>
+                    </div>
+                    <div class="np-spec-row np-r4">
+                        <div class="np-col1">O/P CURRENT</div>
+                        <div class="np-col2">${spec.opCurrent}</div>
+                    </div>
                 </div>
                 <div class="np-right-area">
                     <div class="np-r1-right"></div>
                     <div class="np-barcode-box">
-                        <div class="np-barcode-item"><svg class="bc-sr"></svg><div class="np-barcode-text">SR. NO. ${srNo}</div></div>
-                        <div class="np-barcode-item"><svg class="bc-prod"></svg><div class="np-barcode-text">${prodCode}</div></div>
+                        <div class="np-barcode-item">
+                            <svg class="bc-sr"></svg>
+                            <div class="np-barcode-text">SR. NO. ${srNo}</div>
+                        </div>
+                        <div class="np-barcode-item">
+                            <svg class="bc-prod"></svg>
+                            <div class="np-barcode-text">${prodCode}</div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="np-row-5"><div class="np-col1">SPL. FEATURE</div><div class="np-col2">-</div></div>
+            <div class="np-row-5">
+                <div class="np-col1">SPL. FEATURE</div>
+                <div class="np-col2">-</div>
+            </div>
             <div class="np-footer">VERTIV ENERGY PRIVATE LIMITED</div>
         </div>
     `;
-    JsBarcode(wrapper.querySelector(".bc-sr"), srNo, { format: "CODE128", displayValue: false, margin: 0, width: 1.5, height: 35 });
-    JsBarcode(wrapper.querySelector(".bc-prod"), prodCode, { format: "CODE128", displayValue: false, margin: 0, width: 1.5, height: 35 });
+
+    JsBarcode(wrapper.querySelector(".bc-sr"), srNo, {
+        format: "CODE128",
+        displayValue: false,
+        margin: 0,
+        width: 1.5,
+        height: 35
+    });
+
+    JsBarcode(wrapper.querySelector(".bc-prod"), prodCode, {
+        format: "CODE128",
+        displayValue: false,
+        margin: 0,
+        width: 1.5,
+        height: 35
+    });
+
     return wrapper;
 }
 
 function createQRLabelsDOM(srNo, partOverride) {
     const spec = resolveSpecFromSR(srNo);
     const prodCode = partOverride || spec.qrProdCode;
-    function buildSingleCard(line2, qrValue, footerText) {
+
+    function buildSingleCard(line2, qrValue, idLabel, idValue) {
         const card = document.createElement("div");
         card.className = "qr-label-card";
+
         card.innerHTML = `
             <div class="qr-top-title">Trinergy</div>
             <div class="qr-top-sub">${line2}</div>
             <div class="qr-widget-box"></div>
-            <div class="qr-footer-line">${footerText}</div>
+            <div class="qr-id-label">${idLabel}</div>
+            <div class="qr-id-value">${idValue}</div>
         `;
-        new QRCode(card.querySelector(".qr-widget-box"), { text: qrValue, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.M });
+
+        new QRCode(card.querySelector(".qr-widget-box"), {
+            text: qrValue,
+            width: 160,
+            height: 160,
+            correctLevel: QRCode.CorrectLevel.M
+        });
+
         return card;
     }
-    return [buildSingleCard(spec.qrLine2, srNo, `Sr No.          ${srNo}`), buildSingleCard(spec.qrLine2, prodCode, `Part No.       ${prodCode}`)];
+
+    return [
+        buildSingleCard(spec.qrLine2, srNo, "Sr No.", srNo),
+        buildSingleCard(spec.qrLine2, prodCode, "Part No.", prodCode)
+    ];
 }
 
 function renderLivePreview() {
@@ -646,34 +858,55 @@ function renderLivePreview() {
     const partOverride = document.getElementById("print-part-override").value.trim();
     const stage = document.getElementById("live-preview-stage");
     const badge = document.getElementById("preview-dim-badge");
+
     stage.innerHTML = "";
+
     if (labelType === "nameplate") {
         badge.innerHTML = "100mm &times; 50mm (Code128 Barcode)";
         stage.appendChild(createNameplateDOM(srNo, partOverride));
     } else {
         badge.innerHTML = "36mm &times; 12mm &times; 2 Labels (SR + Part QR)";
-        createQRLabelsDOM(srNo, partOverride).forEach(c => stage.appendChild(c));
+        createQRLabelsDOM(srNo, partOverride).forEach(card => stage.appendChild(card));
     }
 }
 
-function handleDirectPrint(e) { e.preventDefault(); triggerBrowserPrint(); }
+function handleDirectPrint(event) {
+    event.preventDefault();
+    triggerBrowserPrint();
+}
+
 function triggerBrowserPrint() {
     const srNo = document.getElementById("print-sr-custom").value.trim();
     const labelType = document.getElementById("print-label-type").value;
     const partOverride = document.getElementById("print-part-override").value.trim();
-    if (!srNo) { alert("Please select or enter an SR Number."); return; }
-    
+
+    if (!srNo) {
+        alert("Please select or enter an SR Number.");
+        return;
+    }
+
     const mount = document.getElementById("direct-print-mount");
     const pageStyle = document.getElementById("dynamic-page-size");
+
     mount.innerHTML = "";
+
     if (labelType === "nameplate") {
-        pageStyle.innerHTML = `@media print { @page { size: 100mm 50mm; margin: 0mm; } }`;
+        pageStyle.innerHTML = `
+            @media print {
+                @page { size: 100mm 50mm; margin: 0; }
+            }
+        `;
         mount.appendChild(createNameplateDOM(srNo, partOverride));
     } else {
-        pageStyle.innerHTML = `@media print { @page { size: 36mm 12mm; margin: 0mm; } }`;
-        createQRLabelsDOM(srNo, partOverride).forEach(c => mount.appendChild(c));
+        pageStyle.innerHTML = `
+            @media print {
+                @page { size: 36mm 12mm; margin: 0; }
+            }
+        `;
+        createQRLabelsDOM(srNo, partOverride).forEach(card => mount.appendChild(card));
     }
-    setTimeout(() => { window.print(); }, 80);
+
+    setTimeout(() => window.print(), 150);
 }
 </script>
 </body>
