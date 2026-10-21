@@ -193,8 +193,7 @@
         }
 
         /* ==========================================================
-           EXACT PHYSICAL DIMENSIONS FOR QR LABELS (36mm x 12mm)
-           Matches qr_label.py _single_qr_label()
+           EXACT PHYSICAL DIMENSIONS FOR QR LABELS (36mm x 12mm) - Fixed Overlap
            ========================================================== */
         .qr-label-card {
             width: 36mm;
@@ -202,38 +201,39 @@
             background: #ffffff;
             color: #000000;
             box-sizing: border-box;
-            padding: 0.25mm;
+            padding: 0.5mm;
             position: relative;
             font-family: Arial, Helvetica, sans-serif;
             box-shadow: 0 3px 10px rgba(0,0,0,0.12);
             border: 0.2mm dashed #ccc;
             flex-shrink: 0;
+            overflow: hidden;
         }
 
         .qr-top-title {
             position: absolute;
-            left: 0.55mm;
+            left: 1mm;
             top: 0.8mm;
-            font-size: 7.2pt;
+            font-size: 6.5pt;
             font-weight: 700;
-            line-height: 1.05;
+            line-height: 1;
         }
 
         .qr-top-sub {
             position: absolute;
-            left: 0.55mm;
-            top: 4.0mm;
-            font-size: 7.2pt;
+            left: 1mm;
+            top: 3.8mm;
+            font-size: 6.5pt;
             font-weight: 700;
-            line-height: 1.05;
+            line-height: 1;
         }
 
         .qr-widget-box {
             position: absolute;
-            left: 18.2mm;
-            top: 0.45mm;
-            width: 10.2mm;
-            height: 10.2mm;
+            left: 23mm;
+            top: 1mm;
+            width: 10mm;
+            height: 10mm;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -241,16 +241,16 @@
 
         .qr-widget-box img,
         .qr-widget-box canvas {
-            width: 10.2mm !important;
-            height: 10.2mm !important;
+            width: 10mm !important;
+            height: 10mm !important;
             display: block;
         }
 
         .qr-footer-line {
             position: absolute;
-            left: 0.65mm;
-            bottom: 0.55mm;
-            font-size: 6.3pt;
+            left: 1mm;
+            bottom: 1.2mm;
+            font-size: 5.6pt;
             font-weight: 700;
             white-space: pre;
             line-height: 1;
@@ -291,7 +291,6 @@
 <body>
 
 <div class="container-fluid py-4 no-print">
-    <!-- Top Header -->
     <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
         <div>
             <h3 class="fw-bold text-dark mb-0">
@@ -311,7 +310,6 @@
 
     <!-- 3 CORE FUNCTIONS ROW -->
     <div class="row g-3 mb-4">
-
         <!-- FUNCTION 1: GENERATE NEW SR -->
         <div class="col-lg-4 col-md-6">
             <div class="card shadow-sm h-100 border-0 border-top border-4 border-primary">
@@ -414,12 +412,10 @@
                 </div>
             </div>
         </div>
-
     </div>
 
     <!-- LIVE LABEL PREVIEW & RECENT SRs -->
     <div class="row g-3">
-        <!-- Live Hardware Label Preview -->
         <div class="col-lg-6">
             <div class="card shadow-sm h-100">
                 <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -432,7 +428,6 @@
             </div>
         </div>
 
-        <!-- Recent Generated SR Records -->
         <div class="col-lg-6">
             <div class="card shadow-sm h-100">
                 <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
@@ -458,68 +453,34 @@
     </div>
 </div>
 
-<!-- Direct Print Mount Zone -->
 <div id="direct-print-mount"></div>
 
 <script>
 const MODEL_SPECS = {
-    "T3X": {
-        family: "3X",
-        modelName: "Trinergy 3X CORE",
-        qrLine2: "3X CORE",
-        nameplateProdCode: "10B20012G27N",
-        qrProdCode: "10B20012G27N",
-        opCurrent: "2083 AMP"
-    },
-    "T2X": {
-        family: "2X",
-        modelName: "Trinergy 2X CORE",
-        qrLine2: "2X CORE",
-        nameplateProdCode: "10B20012G25N",
-        qrProdCode: "10B20010G25N",
-        opCurrent: "1389 AMP"
-    },
-    "TST": {
-        family: "STS",
-        modelName: "Trinergy STS",
-        qrLine2: "STS",
-        nameplateProdCode: "10B20012G32N",
-        qrProdCode: "10B20008G20N",
-        opCurrent: "3000 AMP"
-    }
+    "T3X": { family: "3X", modelName: "Trinergy 3X CORE", qrLine2: "3X CORE", nameplateProdCode: "10B20012G27N", qrProdCode: "10B20012G27N", opCurrent: "2083 AMP" },
+    "T2X": { family: "2X", modelName: "Trinergy 2X CORE", qrLine2: "2X CORE", nameplateProdCode: "10B20012G25N", qrProdCode: "10B20010G25N", opCurrent: "1389 AMP" },
+    "TST": { family: "STS", modelName: "Trinergy STS", qrLine2: "STS", nameplateProdCode: "10B20012G32N", qrProdCode: "10B20008G20N", opCurrent: "3000 AMP" }
 };
 
-const STORAGE_KEYS = {
-    COUNTERS: "trinergy_sr_counters_v2",
-    RECORDS: "trinergy_sr_records_v2"
-};
+const STORAGE_KEYS = { COUNTERS: "trinergy_sr_counters_v3", RECORDS: "trinergy_sr_records_v3" };
 
 let counters = { T3X: 43, T2X: 18, TST: 9 };
 let srRecords = [];
 
 window.addEventListener("DOMContentLoaded", () => {
-    const todayStr = new Date().toISOString().split("T")[0];
-    document.getElementById("gen-test-date").value = todayStr;
-
+    document.getElementById("gen-test-date").value = new Date().toISOString().split("T")[0];
     loadState();
-
     document.getElementById("gen-model-code").addEventListener("change", updateNextSRPreview);
     document.getElementById("gen-test-date").addEventListener("change", updateNextSRPreview);
-
     refreshUI();
 });
 
 function loadState() {
     const savedCounters = localStorage.getItem(STORAGE_KEYS.COUNTERS);
     const savedRecords = localStorage.getItem(STORAGE_KEYS.RECORDS);
-
-    if (savedCounters) {
-        counters = JSON.parse(savedCounters);
-    }
-    if (savedRecords) {
-        srRecords = JSON.parse(savedRecords);
-    } else {
-        // Seed initial sample records using YYYYMM + MODEL_CODE + 4-Digit Counter
+    if (savedCounters) counters = JSON.parse(savedCounters);
+    if (savedRecords) srRecords = JSON.parse(savedRecords);
+    else {
         srRecords = [
             { srNumber: "202610T3X0043", modelCode: "T3X", creationDate: "2026-10-21" },
             { srNumber: "202610T2X0018", modelCode: "T2X", creationDate: "2026-10-20" },
@@ -535,7 +496,7 @@ function saveState() {
 }
 
 function resetDemoData() {
-    if (confirm("Reset all counters and SR records to default test values?")) {
+    if (confirm("Reset all counters and SR records?")) {
         localStorage.removeItem(STORAGE_KEYS.COUNTERS);
         localStorage.removeItem(STORAGE_KEYS.RECORDS);
         counters = { T3X: 43, T2X: 18, TST: 9 };
@@ -544,30 +505,18 @@ function resetDemoData() {
     }
 }
 
-/**
- * Format SR Number: YYYYMM (6 chars) + MODEL_CODE (3 chars) + XXXX (4-digit padded counter)
- * Example: 202610T3X0044 -> sr_no[6:9] is "T3X"
- */
 function buildSRNumber(modelCode, dateStr, seqNumber) {
     if (!modelCode || !dateStr) return "";
-    const parts = dateStr.split("-"); // [YYYY, MM, DD]
-    const yyyy = parts[0];
-    const mm = parts[1];
-    const paddedSeq = String(seqNumber).padStart(4, "0");
-    return `${yyyy}${mm}${modelCode}${paddedSeq}`;
+    const parts = dateStr.split("-");
+    return `${parts[0]}${parts[1]}${modelCode}${String(seqNumber).padStart(4, "0")}`;
 }
 
 function updateNextSRPreview() {
     const modelCode = document.getElementById("gen-model-code").value;
     const dateStr = document.getElementById("gen-test-date").value;
     const previewInput = document.getElementById("gen-sr-preview");
-
-    if (!modelCode || !dateStr) {
-        previewInput.value = "";
-        return;
-    }
-    const nextSeq = (counters[modelCode] || 0) + 1;
-    previewInput.value = buildSRNumber(modelCode, dateStr, nextSeq);
+    if (!modelCode || !dateStr) { previewInput.value = ""; return; }
+    previewInput.value = buildSRNumber(modelCode, dateStr, (counters[modelCode] || 0) + 1);
 }
 
 function handleCreateSR(e) {
@@ -575,16 +524,9 @@ function handleCreateSR(e) {
     const modelCode = document.getElementById("gen-model-code").value;
     const dateStr = document.getElementById("gen-test-date").value;
     if (!modelCode || !dateStr) return;
-
     counters[modelCode] = (counters[modelCode] || 0) + 1;
     const newSR = buildSRNumber(modelCode, dateStr, counters[modelCode]);
-
-    srRecords.unshift({
-        srNumber: newSR,
-        modelCode: modelCode,
-        creationDate: dateStr
-    });
-
+    srRecords.unshift({ srNumber: newSR, modelCode: modelCode, creationDate: dateStr });
     saveState();
     refreshUI(newSR);
     updateNextSRPreview();
@@ -595,7 +537,6 @@ function handleUpdateCounter(e) {
     const modelCode = document.getElementById("counter-model-code").value;
     const newVal = parseInt(document.getElementById("counter-new-val").value, 10);
     if (!modelCode || isNaN(newVal) || newVal < 0) return;
-
     counters[modelCode] = newVal;
     saveState();
     document.getElementById("counter-new-val").value = "";
@@ -605,24 +546,16 @@ function handleUpdateCounter(e) {
 
 function refreshUI(selectSR = null) {
     document.getElementById("stat-total").textContent = `Total SRs: ${srRecords.length}`;
+    document.getElementById("counter-badges").innerHTML = Object.entries(counters)
+        .map(([code, val]) => `<span class="badge bg-white text-dark border me-2 px-2 py-1">${code}: <strong>${val}</strong></span>`).join("");
 
-    const badgeContainer = document.getElementById("counter-badges");
-    badgeContainer.innerHTML = Object.entries(counters)
-        .map(([code, val]) => `<span class="badge bg-white text-dark border me-2 px-2 py-1">${code}: <strong>${val}</strong></span>`)
-        .join("");
-
-    const srSelect = document.getElementById("print-sr-select");
     const activeSR = selectSR || document.getElementById("print-sr-custom").value || (srRecords[0] && srRecords[0].srNumber) || "";
-
-    srSelect.innerHTML = `<option value="">Choose SR...</option>` +
+    document.getElementById("print-sr-select").innerHTML = `<option value="">Choose SR...</option>` +
         srRecords.map(r => `<option value="${r.srNumber}" ${r.srNumber === activeSR ? "selected" : ""}>${r.srNumber} (${r.modelCode})</option>`).join("");
 
-    if (activeSR) {
-        document.getElementById("print-sr-custom").value = activeSR;
-    }
+    if (activeSR) document.getElementById("print-sr-custom").value = activeSR;
 
-    const tbody = document.getElementById("sr-records-tbody");
-    tbody.innerHTML = srRecords.map(r => {
+    document.getElementById("sr-records-tbody").innerHTML = srRecords.map(r => {
         const spec = MODEL_SPECS[r.modelCode] || MODEL_SPECS.T3X;
         return `
             <tr style="cursor:pointer;" onclick="selectRecordForPrint('${r.srNumber}')">
@@ -631,12 +564,8 @@ function refreshUI(selectSR = null) {
                 <td class="font-monospace">${spec.nameplateProdCode}</td>
                 <td>${r.creationDate}</td>
                 <td class="text-end" onclick="event.stopPropagation();">
-                    <button class="btn btn-sm btn-outline-dark py-0 px-2 me-1" onclick="quickPrint('${r.srNumber}', 'nameplate')">
-                        <i class="bi bi-upc-scan"></i> Nameplate
-                    </button>
-                    <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="quickPrint('${r.srNumber}', 'qr')">
-                        <i class="bi bi-qr-code"></i> QR
-                    </button>
+                    <button class="btn btn-sm btn-outline-dark py-0 px-2 me-1" onclick="quickPrint('${r.srNumber}', 'nameplate')"><i class="bi bi-upc-scan"></i> Nameplate</button>
+                    <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="quickPrint('${r.srNumber}', 'qr')"><i class="bi bi-qr-code"></i> QR</button>
                 </td>
             </tr>
         `;
@@ -645,19 +574,8 @@ function refreshUI(selectSR = null) {
     renderLivePreview();
 }
 
-function syncSelectedSR(val) {
-    if (val) {
-        document.getElementById("print-sr-custom").value = val;
-        renderLivePreview();
-    }
-}
-
-function selectRecordForPrint(srNumber) {
-    document.getElementById("print-sr-select").value = srNumber;
-    document.getElementById("print-sr-custom").value = srNumber;
-    renderLivePreview();
-}
-
+function syncSelectedSR(val) { if (val) { document.getElementById("print-sr-custom").value = val; renderLivePreview(); } }
+function selectRecordForPrint(srNumber) { document.getElementById("print-sr-select").value = srNumber; document.getElementById("print-sr-custom").value = srNumber; renderLivePreview(); }
 function quickPrint(srNumber, labelType) {
     document.getElementById("print-sr-select").value = srNumber;
     document.getElementById("print-sr-custom").value = srNumber;
@@ -669,16 +587,12 @@ function quickPrint(srNumber, labelType) {
 function resolveSpecFromSR(srNo) {
     const clean = (srNo || "").trim().toUpperCase();
     const sliceCode = clean.length >= 9 ? clean.substring(6, 9) : "";
-    if (MODEL_SPECS[sliceCode]) {
-        return { code: sliceCode, ...MODEL_SPECS[sliceCode], validSlice: true };
-    }
-    return { code: "T3X", ...MODEL_SPECS["T3X"], validSlice: false };
+    return MODEL_SPECS[sliceCode] ? { code: sliceCode, ...MODEL_SPECS[sliceCode], validSlice: true } : { code: "T3X", ...MODEL_SPECS["T3X"], validSlice: false };
 }
 
 function createNameplateDOM(srNo, partOverride) {
     const spec = resolveSpecFromSR(srNo);
     const prodCode = partOverride || spec.nameplateProdCode;
-
     const wrapper = document.createElement("div");
     wrapper.className = "nameplate-label";
     wrapper.innerHTML = `
@@ -686,69 +600,31 @@ function createNameplateDOM(srNo, partOverride) {
             <div class="np-row-0">Trinergy U.P.S.</div>
             <div class="np-middle-grid">
                 <div class="np-left-rows">
-                    <div class="np-spec-row np-r1">
-                        <div class="np-col1">TYPE/RATING</div>
-                        <div class="np-col2">${spec.family} CORE, 415VAC, 3PH, 50Hz</div>
-                    </div>
-                    <div class="np-spec-row np-r2">
-                        <div class="np-col1">MAINS I/P</div>
-                        <div class="np-col2">415VAC, 3PH, 50Hz</div>
-                    </div>
-                    <div class="np-spec-row np-r3">
-                        <div class="np-col1">BYPASS I/P</div>
-                        <div class="np-col2">415VAC, 3PH, 50Hz</div>
-                    </div>
-                    <div class="np-spec-row np-r4">
-                        <div class="np-col1">O/P CURRENT</div>
-                        <div class="np-col2">${spec.opCurrent}</div>
-                    </div>
+                    <div class="np-spec-row np-r1"><div class="np-col1">TYPE/RATING</div><div class="np-col2">${spec.family} CORE, 415VAC, 3PH, 50Hz</div></div>
+                    <div class="np-spec-row np-r2"><div class="np-col1">MAINS I/P</div><div class="np-col2">415VAC, 3PH, 50Hz</div></div>
+                    <div class="np-spec-row np-r3"><div class="np-col1">BYPASS I/P</div><div class="np-col2">415VAC, 3PH, 50Hz</div></div>
+                    <div class="np-spec-row np-r4"><div class="np-col1">O/P CURRENT</div><div class="np-col2">${spec.opCurrent}</div></div>
                 </div>
                 <div class="np-right-area">
                     <div class="np-r1-right"></div>
                     <div class="np-barcode-box">
-                        <div class="np-barcode-item">
-                            <svg class="bc-sr"></svg>
-                            <div class="np-barcode-text">SR. NO. ${srNo}</div>
-                        </div>
-                        <div class="np-barcode-item">
-                            <svg class="bc-prod"></svg>
-                            <div class="np-barcode-text">${prodCode}</div>
-                        </div>
+                        <div class="np-barcode-item"><svg class="bc-sr"></svg><div class="np-barcode-text">SR. NO. ${srNo}</div></div>
+                        <div class="np-barcode-item"><svg class="bc-prod"></svg><div class="np-barcode-text">${prodCode}</div></div>
                     </div>
                 </div>
             </div>
-            <div class="np-row-5">
-                <div class="np-col1">SPL. FEATURE</div>
-                <div class="np-col2">-</div>
-            </div>
-            <div class="np-footer">
-                VERTIV ENERGY PRIVATE LIMITED
-            </div>
+            <div class="np-row-5"><div class="np-col1">SPL. FEATURE</div><div class="np-col2">-</div></div>
+            <div class="np-footer">VERTIV ENERGY PRIVATE LIMITED</div>
         </div>
     `;
-
-    JsBarcode(wrapper.querySelector(".bc-sr"), srNo, {
-        format: "CODE128",
-        displayValue: false,
-        margin: 0,
-        width: 1.5,
-        height: 35
-    });
-    JsBarcode(wrapper.querySelector(".bc-prod"), prodCode, {
-        format: "CODE128",
-        displayValue: false,
-        margin: 0,
-        width: 1.5,
-        height: 35
-    });
-
+    JsBarcode(wrapper.querySelector(".bc-sr"), srNo, { format: "CODE128", displayValue: false, margin: 0, width: 1.5, height: 35 });
+    JsBarcode(wrapper.querySelector(".bc-prod"), prodCode, { format: "CODE128", displayValue: false, margin: 0, width: 1.5, height: 35 });
     return wrapper;
 }
 
 function createQRLabelsDOM(srNo, partOverride) {
     const spec = resolveSpecFromSR(srNo);
     const prodCode = partOverride || spec.qrProdCode;
-
     function buildSingleCard(line2, qrValue, footerText) {
         const card = document.createElement("div");
         card.className = "qr-label-card";
@@ -758,19 +634,10 @@ function createQRLabelsDOM(srNo, partOverride) {
             <div class="qr-widget-box"></div>
             <div class="qr-footer-line">${footerText}</div>
         `;
-        new QRCode(card.querySelector(".qr-widget-box"), {
-            text: qrValue,
-            width: 96,
-            height: 96,
-            correctLevel: QRCode.CorrectLevel.M
-        });
+        new QRCode(card.querySelector(".qr-widget-box"), { text: qrValue, width: 80, height: 80, correctLevel: QRCode.CorrectLevel.M });
         return card;
     }
-
-    const cardSR = buildSingleCard(spec.qrLine2, srNo, `Sr No.          ${srNo}`);
-    const cardPart = buildSingleCard(spec.qrLine2, prodCode, `Part No.       ${prodCode}`);
-
-    return [cardSR, cardPart];
+    return [buildSingleCard(spec.qrLine2, srNo, `Sr No.          ${srNo}`), buildSingleCard(spec.qrLine2, prodCode, `Part No.       ${prodCode}`)];
 }
 
 function renderLivePreview() {
@@ -779,58 +646,34 @@ function renderLivePreview() {
     const partOverride = document.getElementById("print-part-override").value.trim();
     const stage = document.getElementById("live-preview-stage");
     const badge = document.getElementById("preview-dim-badge");
-
     stage.innerHTML = "";
-
     if (labelType === "nameplate") {
         badge.innerHTML = "100mm &times; 50mm (Code128 Barcode)";
         stage.appendChild(createNameplateDOM(srNo, partOverride));
     } else {
         badge.innerHTML = "36mm &times; 12mm &times; 2 Labels (SR + Part QR)";
-        const cards = createQRLabelsDOM(srNo, partOverride);
-        cards.forEach(c => stage.appendChild(c));
+        createQRLabelsDOM(srNo, partOverride).forEach(c => stage.appendChild(c));
     }
 }
 
-function handleDirectPrint(e) {
-    e.preventDefault();
-    triggerBrowserPrint();
-}
-
+function handleDirectPrint(e) { e.preventDefault(); triggerBrowserPrint(); }
 function triggerBrowserPrint() {
     const srNo = document.getElementById("print-sr-custom").value.trim();
     const labelType = document.getElementById("print-label-type").value;
     const partOverride = document.getElementById("print-part-override").value.trim();
-
-    if (!srNo) {
-        alert("Please select or enter an SR Number before printing.");
-        return;
-    }
-
-    const spec = resolveSpecFromSR(srNo);
-    if (labelType === "qr" && !spec.validSlice) {
-        const proceed = confirm(
-            `Note: SR "${srNo}" does not contain T3X, T2X, or TST at characters 7-9 (sr_no[6:9]). Defaulting to 3X CORE specs. Continue to print?`
-        );
-        if (!proceed) return;
-    }
-
+    if (!srNo) { alert("Please select or enter an SR Number."); return; }
+    
     const mount = document.getElementById("direct-print-mount");
     const pageStyle = document.getElementById("dynamic-page-size");
     mount.innerHTML = "";
-
     if (labelType === "nameplate") {
         pageStyle.innerHTML = `@media print { @page { size: 100mm 50mm; margin: 0mm; } }`;
         mount.appendChild(createNameplateDOM(srNo, partOverride));
     } else {
         pageStyle.innerHTML = `@media print { @page { size: 36mm 12mm; margin: 0mm; } }`;
-        const cards = createQRLabelsDOM(srNo, partOverride);
-        cards.forEach(c => mount.appendChild(c));
+        createQRLabelsDOM(srNo, partOverride).forEach(c => mount.appendChild(c));
     }
-
-    setTimeout(() => {
-        window.print();
-    }, 80);
+    setTimeout(() => { window.print(); }, 80);
 }
 </script>
 </body>
