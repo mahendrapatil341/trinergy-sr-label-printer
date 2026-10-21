@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trinergy SR & Direct Label Print Portal</title>
+    <!-- Bootstrap 5 & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- JsBarcode & QRCode.js for Direct HTML/SVG Rendering (No PDF) -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .preview-stage {
+            background: #e9ecef;
+            border: 2px dashed #adb5bd;
+            border-radius: 8px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 290px;
+            gap: 20px;
+            overflow-x: auto;
+        }
+
+        /* ==========================================================
+           EXACT PHYSICAL DIMENSIONS FOR NAMEPLATE (100mm x 50mm)
+           Matches nameplate_label.py compute_layout()
+           ========================================================== */
+        .nameplate-label {
+            width: 100mm;
+            height: 50mm;
+            background: #ffffff;
+            color: #000000;
+            box-sizing: border-box;
+            padding: 0.5mm;
+            position: relative;
+            font-family: Arial, Helvetica, sans-serif;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            flex-shrink: 0;
+        }
+
+        .np-outer-box {
+            width: 99mm;
+            height: 49mm;
+            border: 0.35mm solid #000;
+            border-radius: 4mm;
+            box-sizing: border-box;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .np-row-0 {
+            height: 8mm;
+            border-bottom: 0.6mm solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13pt;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            box-sizing: border-box;
+        }
+
+        .np-middle-grid {
+            position: relative;
+            width: 99mm;
+            height: 29mm;
+            box-sizing: border-box;
+            border-bottom: 0.6mm solid #000;
+        }
+
+        .np-left-rows {
+            width: 47.52mm;
+            height: 100%;
+            float: left;
+            box-sizing: border-box;
+        }
+
+        .np-spec-row {
+            display: flex;
+            width: 100%;
+            box-sizing: border-box;
+            border-bottom: 0.6mm solid #000;
+            font-size: 6.8pt;
+            line-height: 1;
+        }
+        .np-spec-row:last-child {
+            border-bottom: none;
+        }
+
+        .np-r1 { height: 6mm; }
+        .np-r2 { height: 7mm; }
+        .np-r3 { height: 8mm; }
+        .np-r4 { height: 8mm; }
+
+        .np-col1 {
+            width: 21.78mm;
+            border-right: 0.6mm solid #000;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            padding-left: 1.2mm;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .np-col2 {
+            width: 25.74mm;
+            display: flex;
+            align-items: center;
+            padding-left: 1.2mm;
+            box-sizing: border-box;
+            white-space: nowrap;
+        }
+
+        .np-right-area {
+            width: 51.48mm;
+            height: 29mm;
+            float: left;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .np-r1-right {
+            height: 6mm;
+            display: flex;
+            align-items: center;
+            font-size: 6.8pt;
+            padding-left: 1mm;
+            box-sizing: border-box;
+        }
+
+        .np-barcode-box {
+            width: 51.48mm;
+            height: 23mm;
+            border-top: 0.6mm solid #000;
+            border-left: 0.6mm solid #000;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly;
+            padding: 0.8mm 1mm;
+        }
+
+        .np-barcode-item {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .np-barcode-item svg {
+            width: 48mm;
+            height: 6.8mm;
+            display: block;
+        }
+
+        .np-barcode-text {
+            font-size: 8pt;
+            font-weight: 700;
+            margin-top: 0.3mm;
+            line-height: 1;
+        }
+
+        .np-row-5 {
+            height: 4mm;
+            border-bottom: 0.6mm solid #000;
+            display: flex;
+            font-size: 6.8pt;
+            box-sizing: border-box;
+            clear: both;
+        }
+
+        .np-footer {
+            height: 8mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8.5pt;
+            font-weight: 700;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        /* ==========================================================
+           EXACT PHYSICAL DIMENSIONS FOR QR LABELS (36mm x 12mm)
+           Matches qr_label.py _single_qr_label()
+           ========================================================== */
+        .qr-label-card {
+            width: 36mm;
+            height: 12mm;
+            background: #ffffff;
+            color: #000000;
+            box-sizing: border-box;
+            padding: 0.25mm;
+            position: relative;
+            font-family: Arial, Helvetica, sans-serif;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+            border: 0.2mm dashed #ccc;
+            flex-shrink: 0;
+        }
+
+        .qr-top-title {
+            position: absolute;
+            left: 0.55mm;
+            top: 0.8mm;
+            font-size: 7.2pt;
+            font-weight: 700;
+            line-height: 1.05;
+        }
+
+        .qr-top-sub {
+            position: absolute;
+            left: 0.55mm;
+            top: 4.0mm;
+            font-size: 7.2pt;
+            font-weight: 700;
+            line-height: 1.05;
+        }
+
+        .qr-widget-box {
+            position: absolute;
+            left: 18.2mm;
+            top: 0.45mm;
+            width: 10.2mm;
+            height: 10.2mm;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qr-widget-box img,
+        .qr-widget-box canvas {
+            width: 10.2mm !important;
+            height: 10.2mm !important;
+            display: block;
+        }
+
+        .qr-footer-line {
+            position: absolute;
+            left: 0.65mm;
+            bottom: 0.55mm;
+            font-size: 6.3pt;
+            font-weight: 700;
+            white-space: pre;
+            line-height: 1;
+        }
+
+        /* ==========================================================
+           DIRECT BROWSER PRINT ENGINE (NO PDF INTERMEDIATE)
+           ========================================================== */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .no-print {
+                display: none !important;
+            }
+            #direct-print-mount,
+            #direct-print-mount * {
+                visibility: visible;
+            }
+            #direct-print-mount {
+                position: absolute;
+                left: 0;
+                top: 0;
+                margin: 0;
+                padding: 0;
+            }
+            .nameplate-label,
+            .qr-label-card {
+                box-shadow: none !important;
+                border: none !important;
+                page-break-after: always;
+                break-after: page;
+            }
+        }
+    </style>
+    <style id="dynamic-page-size"></style>
+</head>
+<body>
+
+<div class="container-fluid py-4 no-print">
+    <!-- Top Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h3 class="fw-bold text-dark mb-0">
+                <i class="bi bi-qr-code-scan text-primary me-1"></i> Trinergy SR & Direct Label Print Portal
+            </h3>
+            <p class="text-muted small mb-0">
+                SR Format: <code>YYYYMM + MODEL_CODE + 4-Digit Counter</code> &bull; Direct Thermal Print (No PDF)
+            </p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-primary fs-6" id="stat-total">Total SRs: 0</span>
+            <button class="btn btn-outline-danger btn-sm" onclick="resetDemoData()" title="Reset Local Storage to Defaults">
+                <i class="bi bi-arrow-counterclockwise"></i> Reset Data
+            </button>
+        </div>
+    </div>
+
+    <!-- 3 CORE FUNCTIONS ROW -->
+    <div class="row g-3 mb-4">
+
+        <!-- FUNCTION 1: GENERATE NEW SR -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card shadow-sm h-100 border-0 border-top border-4 border-primary">
+                <div class="card-header bg-white fw-bold py-2">
+                    <i class="bi bi-plus-circle text-primary me-1"></i> 1. Generate New SR
+                </div>
+                <div class="card-body bg-light">
+                    <form id="form-generate-sr" onsubmit="handleCreateSR(event)">
+                        <label class="small text-muted fw-semibold mb-1">Select Model Family</label>
+                        <select class="form-select form-select-sm mb-2" id="gen-model-code" required>
+                            <option value="">Choose Model...</option>
+                            <option value="T3X">T3X - Trinergy 3X CORE (2083 AMP)</option>
+                            <option value="T2X">T2X - Trinergy 2X CORE (1389 AMP)</option>
+                            <option value="TST">TST - Trinergy STS (3000 AMP)</option>
+                        </select>
+
+                        <label class="small text-muted fw-semibold mb-1">Creation Date (YYYY-MM used)</label>
+                        <input type="date" id="gen-test-date" class="form-control form-control-sm mb-2" required>
+
+                        <label class="small text-muted fw-semibold mb-1">Preview Next SR (YYYYMM + MODEL + Counter)</label>
+                        <input type="text" id="gen-sr-preview" class="form-control form-control-sm mb-3 font-monospace fw-bold bg-white" readonly placeholder="Select model & date...">
+
+                        <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold py-2">
+                            <i class="bi bi-lightning-charge-fill me-1"></i> Create SR & Load for Print
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- FUNCTION 2: DIRECT PRINT LABEL (NO PDF) -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card shadow-sm h-100 border-0 border-top border-4 border-warning">
+                <div class="card-header bg-white fw-bold py-2">
+                    <i class="bi bi-printer-fill text-warning me-1"></i> 2. Direct Print Label (No PDF)
+                </div>
+                <div class="card-body bg-light">
+                    <form id="form-print-label" onsubmit="handleDirectPrint(event)">
+                        <label class="small text-muted fw-semibold mb-1">Select Any SR (or Type Custom)</label>
+                        <div class="input-group input-group-sm mb-2">
+                            <select class="form-select" id="print-sr-select" onchange="syncSelectedSR(this.value)">
+                                <option value="">Choose SR...</option>
+                            </select>
+                            <input type="text" id="print-sr-custom" class="form-control font-monospace" placeholder="Or type SR..." oninput="renderLivePreview()">
+                        </div>
+
+                        <div class="row g-2 mb-2">
+                            <div class="col-7">
+                                <label class="small text-muted fw-semibold mb-1">Label Type</label>
+                                <select class="form-select form-select-sm" id="print-label-type" onchange="renderLivePreview()" required>
+                                    <option value="nameplate">Nameplate Barcode (100x50mm)</option>
+                                    <option value="qr">Combined QR Code (36x12mm)</option>
+                                </select>
+                            </div>
+                            <div class="col-5">
+                                <label class="small text-muted fw-semibold mb-1">Part Override</label>
+                                <input type="text" id="print-part-override" class="form-control form-control-sm font-monospace" placeholder="Optional" oninput="renderLivePreview()">
+                            </div>
+                        </div>
+
+                        <div class="alert alert-warning py-1 px-2 small mb-2">
+                            <i class="bi bi-info-circle me-1"></i> Opens native OS printer selector directly with exact millimeter `@page` sizing.
+                        </div>
+
+                        <button type="submit" class="btn btn-warning btn-sm w-100 fw-bold py-2">
+                            <i class="bi bi-printer me-1"></i> Select Printer & Direct Print
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- FUNCTION 3: SYSTEM COUNTERS (ADMIN) -->
+        <div class="col-lg-4 col-md-12">
+            <div class="card shadow-sm h-100 border-0 border-top border-4 border-dark">
+                <div class="card-header bg-white fw-bold py-2">
+                    <i class="bi bi-sliders text-dark me-1"></i> 3. System Counters (Admin)
+                </div>
+                <div class="card-body bg-light d-flex flex-column justify-content-between">
+                    <form id="form-set-counter" onsubmit="handleUpdateCounter(event)">
+                        <label class="small text-muted fw-semibold mb-1">Select Model Counter to Override</label>
+                        <select class="form-select form-select-sm mb-2" id="counter-model-code" required>
+                            <option value="">Select Model...</option>
+                            <option value="T3X">T3X (3X CORE)</option>
+                            <option value="T2X">T2X (2X CORE)</option>
+                            <option value="TST">TST (STS)</option>
+                        </select>
+
+                        <label class="small text-muted fw-semibold mb-1">Set Current Counter Value</label>
+                        <div class="input-group input-group-sm mb-3">
+                            <input type="number" id="counter-new-val" class="form-control" placeholder="e.g. 44" min="0" required>
+                            <button class="btn btn-dark fw-bold" type="submit">Update Counter</button>
+                        </div>
+                    </form>
+
+                    <div class="border-top pt-2">
+                        <small class="text-muted d-block mb-1 fw-semibold">* Live Model Counters (Next SR = Counter + 1):</small>
+                        <div id="counter-badges"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LIVE LABEL PREVIEW & RECENT SRs -->
+    <div class="row g-3">
+        <!-- Live Hardware Label Preview -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <span class="fw-bold"><i class="bi bi-eye text-primary me-1"></i> Live 1:1 Hardware Label Preview</span>
+                    <span class="badge bg-secondary" id="preview-dim-badge">100mm &times; 50mm</span>
+                </div>
+                <div class="card-body">
+                    <div class="preview-stage" id="live-preview-stage"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Generated SR Records -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-list-ul me-1"></i> Generated SR Records</span>
+                    <small class="text-light">Click any row to load into Printer</small>
+                </div>
+                <div class="table-responsive" style="max-height: 330px; overflow-y: auto;">
+                    <table class="table table-striped table-hover mb-0 align-middle small">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>SR Number</th>
+                                <th>Family</th>
+                                <th>Part Code</th>
+                                <th>Created Date</th>
+                                <th class="text-end">Quick Print</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sr-records-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Direct Print Mount Zone -->
+<div id="direct-print-mount"></div>
+
+<script>
+const MODEL_SPECS = {
+    "T3X": {
+        family: "3X",
+        modelName: "Trinergy 3X CORE",
+        qrLine2: "3X CORE",
+        nameplateProdCode: "10B20012G27N",
+        qrProdCode: "10B20012G27N",
+        opCurrent: "2083 AMP"
+    },
+    "T2X": {
+        family: "2X",
+        modelName: "Trinergy 2X CORE",
+        qrLine2: "2X CORE",
+        nameplateProdCode: "10B20012G25N",
+        qrProdCode: "10B20010G25N",
+        opCurrent: "1389 AMP"
+    },
+    "TST": {
+        family: "STS",
+        modelName: "Trinergy STS",
+        qrLine2: "STS",
+        nameplateProdCode: "10B20012G32N",
+        qrProdCode: "10B20008G20N",
+        opCurrent: "3000 AMP"
+    }
+};
+
+const STORAGE_KEYS = {
+    COUNTERS: "trinergy_sr_counters_v2",
+    RECORDS: "trinergy_sr_records_v2"
+};
+
+let counters = { T3X: 43, T2X: 18, TST: 9 };
+let srRecords = [];
+
+window.addEventListener("DOMContentLoaded", () => {
+    const todayStr = new Date().toISOString().split("T")[0];
+    document.getElementById("gen-test-date").value = todayStr;
+
+    loadState();
+
+    document.getElementById("gen-model-code").addEventListener("change", updateNextSRPreview);
+    document.getElementById("gen-test-date").addEventListener("change", updateNextSRPreview);
+
+    refreshUI();
+});
+
+function loadState() {
+    const savedCounters = localStorage.getItem(STORAGE_KEYS.COUNTERS);
+    const savedRecords = localStorage.getItem(STORAGE_KEYS.RECORDS);
+
+    if (savedCounters) {
+        counters = JSON.parse(savedCounters);
+    }
+    if (savedRecords) {
+        srRecords = JSON.parse(savedRecords);
+    } else {
+        // Seed initial sample records using YYYYMM + MODEL_CODE + 4-Digit Counter
+        srRecords = [
+            { srNumber: "202610T3X0043", modelCode: "T3X", creationDate: "2026-10-21" },
+            { srNumber: "202610T2X0018", modelCode: "T2X", creationDate: "2026-10-20" },
+            { srNumber: "202610TST0009", modelCode: "TST", creationDate: "2026-10-19" }
+        ];
+        saveState();
+    }
+}
+
+function saveState() {
+    localStorage.setItem(STORAGE_KEYS.COUNTERS, JSON.stringify(counters));
+    localStorage.setItem(STORAGE_KEYS.RECORDS, JSON.stringify(srRecords));
+}
+
+function resetDemoData() {
+    if (confirm("Reset all counters and SR records to default test values?")) {
+        localStorage.removeItem(STORAGE_KEYS.COUNTERS);
+        localStorage.removeItem(STORAGE_KEYS.RECORDS);
+        counters = { T3X: 43, T2X: 18, TST: 9 };
+        loadState();
+        refreshUI();
+    }
+}
+
+/**
+ * Format SR Number: YYYYMM (6 chars) + MODEL_CODE (3 chars) + XXXX (4-digit padded counter)
+ * Example: 202610T3X0044 -> sr_no[6:9] is "T3X"
+ */
+function buildSRNumber(modelCode, dateStr, seqNumber) {
+    if (!modelCode || !dateStr) return "";
+    const parts = dateStr.split("-"); // [YYYY, MM, DD]
+    const yyyy = parts[0];
+    const mm = parts[1];
+    const paddedSeq = String(seqNumber).padStart(4, "0");
+    return `${yyyy}${mm}${modelCode}${paddedSeq}`;
+}
+
+function updateNextSRPreview() {
+    const modelCode = document.getElementById("gen-model-code").value;
+    const dateStr = document.getElementById("gen-test-date").value;
+    const previewInput = document.getElementById("gen-sr-preview");
+
+    if (!modelCode || !dateStr) {
+        previewInput.value = "";
+        return;
+    }
+    const nextSeq = (counters[modelCode] || 0) + 1;
+    previewInput.value = buildSRNumber(modelCode, dateStr, nextSeq);
+}
+
+function handleCreateSR(e) {
+    e.preventDefault();
+    const modelCode = document.getElementById("gen-model-code").value;
+    const dateStr = document.getElementById("gen-test-date").value;
+    if (!modelCode || !dateStr) return;
+
+    counters[modelCode] = (counters[modelCode] || 0) + 1;
+    const newSR = buildSRNumber(modelCode, dateStr, counters[modelCode]);
+
+    srRecords.unshift({
+        srNumber: newSR,
+        modelCode: modelCode,
+        creationDate: dateStr
+    });
+
+    saveState();
+    refreshUI(newSR);
+    updateNextSRPreview();
+}
+
+function handleUpdateCounter(e) {
+    e.preventDefault();
+    const modelCode = document.getElementById("counter-model-code").value;
+    const newVal = parseInt(document.getElementById("counter-new-val").value, 10);
+    if (!modelCode || isNaN(newVal) || newVal < 0) return;
+
+    counters[modelCode] = newVal;
+    saveState();
+    document.getElementById("counter-new-val").value = "";
+    refreshUI();
+    updateNextSRPreview();
+}
+
+function refreshUI(selectSR = null) {
+    document.getElementById("stat-total").textContent = `Total SRs: ${srRecords.length}`;
+
+    const badgeContainer = document.getElementById("counter-badges");
+    badgeContainer.innerHTML = Object.entries(counters)
+        .map(([code, val]) => `<span class="badge bg-white text-dark border me-2 px-2 py-1">${code}: <strong>${val}</strong></span>`)
+        .join("");
+
+    const srSelect = document.getElementById("print-sr-select");
+    const activeSR = selectSR || document.getElementById("print-sr-custom").value || (srRecords[0] && srRecords[0].srNumber) || "";
+
+    srSelect.innerHTML = `<option value="">Choose SR...</option>` +
+        srRecords.map(r => `<option value="${r.srNumber}" ${r.srNumber === activeSR ? "selected" : ""}>${r.srNumber} (${r.modelCode})</option>`).join("");
+
+    if (activeSR) {
+        document.getElementById("print-sr-custom").value = activeSR;
+    }
+
+    const tbody = document.getElementById("sr-records-tbody");
+    tbody.innerHTML = srRecords.map(r => {
+        const spec = MODEL_SPECS[r.modelCode] || MODEL_SPECS.T3X;
+        return `
+            <tr style="cursor:pointer;" onclick="selectRecordForPrint('${r.srNumber}')">
+                <td class="fw-bold font-monospace text-primary">${r.srNumber}</td>
+                <td><span class="badge bg-secondary">${spec.qrLine2}</span></td>
+                <td class="font-monospace">${spec.nameplateProdCode}</td>
+                <td>${r.creationDate}</td>
+                <td class="text-end" onclick="event.stopPropagation();">
+                    <button class="btn btn-sm btn-outline-dark py-0 px-2 me-1" onclick="quickPrint('${r.srNumber}', 'nameplate')">
+                        <i class="bi bi-upc-scan"></i> Nameplate
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="quickPrint('${r.srNumber}', 'qr')">
+                        <i class="bi bi-qr-code"></i> QR
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+
+    renderLivePreview();
+}
+
+function syncSelectedSR(val) {
+    if (val) {
+        document.getElementById("print-sr-custom").value = val;
+        renderLivePreview();
+    }
+}
+
+function selectRecordForPrint(srNumber) {
+    document.getElementById("print-sr-select").value = srNumber;
+    document.getElementById("print-sr-custom").value = srNumber;
+    renderLivePreview();
+}
+
+function quickPrint(srNumber, labelType) {
+    document.getElementById("print-sr-select").value = srNumber;
+    document.getElementById("print-sr-custom").value = srNumber;
+    document.getElementById("print-label-type").value = labelType;
+    renderLivePreview();
+    setTimeout(() => triggerBrowserPrint(), 120);
+}
+
+function resolveSpecFromSR(srNo) {
+    const clean = (srNo || "").trim().toUpperCase();
+    const sliceCode = clean.length >= 9 ? clean.substring(6, 9) : "";
+    if (MODEL_SPECS[sliceCode]) {
+        return { code: sliceCode, ...MODEL_SPECS[sliceCode], validSlice: true };
+    }
+    return { code: "T3X", ...MODEL_SPECS["T3X"], validSlice: false };
+}
+
+function createNameplateDOM(srNo, partOverride) {
+    const spec = resolveSpecFromSR(srNo);
+    const prodCode = partOverride || spec.nameplateProdCode;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "nameplate-label";
+    wrapper.innerHTML = `
+        <div class="np-outer-box">
+            <div class="np-row-0">Trinergy U.P.S.</div>
+            <div class="np-middle-grid">
+                <div class="np-left-rows">
+                    <div class="np-spec-row np-r1">
+                        <div class="np-col1">TYPE/RATING</div>
+                        <div class="np-col2">${spec.family} CORE, 415VAC, 3PH, 50Hz</div>
+                    </div>
+                    <div class="np-spec-row np-r2">
+                        <div class="np-col1">MAINS I/P</div>
+                        <div class="np-col2">415VAC, 3PH, 50Hz</div>
+                    </div>
+                    <div class="np-spec-row np-r3">
+                        <div class="np-col1">BYPASS I/P</div>
+                        <div class="np-col2">415VAC, 3PH, 50Hz</div>
+                    </div>
+                    <div class="np-spec-row np-r4">
+                        <div class="np-col1">O/P CURRENT</div>
+                        <div class="np-col2">${spec.opCurrent}</div>
+                    </div>
+                </div>
+                <div class="np-right-area">
+                    <div class="np-r1-right"></div>
+                    <div class="np-barcode-box">
+                        <div class="np-barcode-item">
+                            <svg class="bc-sr"></svg>
+                            <div class="np-barcode-text">SR. NO. ${srNo}</div>
+                        </div>
+                        <div class="np-barcode-item">
+                            <svg class="bc-prod"></svg>
+                            <div class="np-barcode-text">${prodCode}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="np-row-5">
+                <div class="np-col1">SPL. FEATURE</div>
+                <div class="np-col2">-</div>
+            </div>
+            <div class="np-footer">
+                VERTIV ENERGY PRIVATE LIMITED
+            </div>
+        </div>
+    `;
+
+    JsBarcode(wrapper.querySelector(".bc-sr"), srNo, {
+        format: "CODE128",
+        displayValue: false,
+        margin: 0,
+        width: 1.5,
+        height: 35
+    });
+    JsBarcode(wrapper.querySelector(".bc-prod"), prodCode, {
+        format: "CODE128",
+        displayValue: false,
+        margin: 0,
+        width: 1.5,
+        height: 35
+    });
+
+    return wrapper;
+}
+
+function createQRLabelsDOM(srNo, partOverride) {
+    const spec = resolveSpecFromSR(srNo);
+    const prodCode = partOverride || spec.qrProdCode;
+
+    function buildSingleCard(line2, qrValue, footerText) {
+        const card = document.createElement("div");
+        card.className = "qr-label-card";
+        card.innerHTML = `
+            <div class="qr-top-title">Trinergy</div>
+            <div class="qr-top-sub">${line2}</div>
+            <div class="qr-widget-box"></div>
+            <div class="qr-footer-line">${footerText}</div>
+        `;
+        new QRCode(card.querySelector(".qr-widget-box"), {
+            text: qrValue,
+            width: 96,
+            height: 96,
+            correctLevel: QRCode.CorrectLevel.M
+        });
+        return card;
+    }
+
+    const cardSR = buildSingleCard(spec.qrLine2, srNo, `Sr No.          ${srNo}`);
+    const cardPart = buildSingleCard(spec.qrLine2, prodCode, `Part No.       ${prodCode}`);
+
+    return [cardSR, cardPart];
+}
+
+function renderLivePreview() {
+    const srNo = (document.getElementById("print-sr-custom").value || "202610T3X0043").trim();
+    const labelType = document.getElementById("print-label-type").value;
+    const partOverride = document.getElementById("print-part-override").value.trim();
+    const stage = document.getElementById("live-preview-stage");
+    const badge = document.getElementById("preview-dim-badge");
+
+    stage.innerHTML = "";
+
+    if (labelType === "nameplate") {
+        badge.innerHTML = "100mm &times; 50mm (Code128 Barcode)";
+        stage.appendChild(createNameplateDOM(srNo, partOverride));
+    } else {
+        badge.innerHTML = "36mm &times; 12mm &times; 2 Labels (SR + Part QR)";
+        const cards = createQRLabelsDOM(srNo, partOverride);
+        cards.forEach(c => stage.appendChild(c));
+    }
+}
+
+function handleDirectPrint(e) {
+    e.preventDefault();
+    triggerBrowserPrint();
+}
+
+function triggerBrowserPrint() {
+    const srNo = document.getElementById("print-sr-custom").value.trim();
+    const labelType = document.getElementById("print-label-type").value;
+    const partOverride = document.getElementById("print-part-override").value.trim();
+
+    if (!srNo) {
+        alert("Please select or enter an SR Number before printing.");
+        return;
+    }
+
+    const spec = resolveSpecFromSR(srNo);
+    if (labelType === "qr" && !spec.validSlice) {
+        const proceed = confirm(
+            `Note: SR "${srNo}" does not contain T3X, T2X, or TST at characters 7-9 (sr_no[6:9]). Defaulting to 3X CORE specs. Continue to print?`
+        );
+        if (!proceed) return;
+    }
+
+    const mount = document.getElementById("direct-print-mount");
+    const pageStyle = document.getElementById("dynamic-page-size");
+    mount.innerHTML = "";
+
+    if (labelType === "nameplate") {
+        pageStyle.innerHTML = `@media print { @page { size: 100mm 50mm; margin: 0mm; } }`;
+        mount.appendChild(createNameplateDOM(srNo, partOverride));
+    } else {
+        pageStyle.innerHTML = `@media print { @page { size: 36mm 12mm; margin: 0mm; } }`;
+        const cards = createQRLabelsDOM(srNo, partOverride);
+        cards.forEach(c => mount.appendChild(c));
+    }
+
+    setTimeout(() => {
+        window.print();
+    }, 80);
+}
+</script>
+</body>
+</html>
